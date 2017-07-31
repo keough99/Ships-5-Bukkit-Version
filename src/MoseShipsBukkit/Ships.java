@@ -75,7 +75,7 @@ public class Ships extends JavaPlugin {
 		if (config.getBoolean("Structure.Sign.Cell.enabled")) {
 			ShipsAutoRuns.SolorCell();
 		}
-		if (config.getBoolean("World.Physics.VesselFallOutSky")) {
+		if (config.getBoolean("World.ProtectedVessels.VesselFallOutSky")) {
 			ShipsAutoRuns.fallOutSky();
 		}
 		afterBoot();
@@ -149,14 +149,8 @@ public class Ships extends JavaPlugin {
 		STACK.addBlock(block);
 		YamlConfiguration config = YamlConfiguration.loadConfiguration(Config.getConfig().getFile());
 		int limit = config.getInt("Structure.StructureLimits.trackLimit");
-		BlockFace[] faces = {
-			BlockFace.DOWN,
-			BlockFace.EAST,
-			BlockFace.NORTH,
-			BlockFace.SOUTH,
-			BlockFace.UP,
-			BlockFace.WEST
-		};
+		BlockFace[] faces = { BlockFace.DOWN, BlockFace.EAST, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.UP,
+				BlockFace.WEST };
 		prototype3(block, faces, limit);
 		if (STACK.isVaild()) {
 			List<Block> stack = STACK.getList();
@@ -185,15 +179,14 @@ public class Ships extends JavaPlugin {
 					STACK.addBlock(block2);
 					prototype3(block2, faces, limit);
 				}
-			} /* else{
-				 * if (!material.contains(block2.getType().name())){
-				 * material.add(block2.getType().name());
-				 * }
-				 * } */
+			} /*
+				 * else{ if (!material.contains(block2.getType().name())){
+				 * material.add(block2.getType().name()); } }
+				 */
 		}
-		/* if (material.size() != 0){
-		 * System.out.println(material);
-		 * } */
+		/*
+		 * if (material.size() != 0){ System.out.println(material); }
+		 */
 	}
 
 	@SuppressWarnings("deprecation")
@@ -209,7 +202,8 @@ public class Ships extends JavaPlugin {
 			count++;
 			for (BlockFace face : faces) {
 				Block block2 = viewingBlock.getRelative(face);
-				console.sendMessage("facing: " + face.name() + " | type: " + block2.getType() + " | data: " + block2.getData());
+				console.sendMessage(
+						"facing: " + face.name() + " | type: " + block2.getType() + " | data: " + block2.getData());
 				if ((MaterialsList.getMaterialsList().contains(block2.getType(), block2.getData(), true))) {
 					console.sendMessage("materials accepted it");
 					if (!stack.contains(block2)) {
@@ -247,35 +241,60 @@ public class Ships extends JavaPlugin {
 
 	// fixes a missing part of the bukkit API
 	public static BlockFace getSideFace(BlockFace face, boolean left) {
-		if (face.equals(BlockFace.NORTH)) {
+		BlockFace ret = null;
+		switch (face) {
+		case NORTH:
 			if (left) {
-				return BlockFace.WEST;
+				ret = BlockFace.WEST;
 			} else {
-				return BlockFace.EAST;
+				ret = BlockFace.EAST;
 			}
-		}
-		if (face.equals(BlockFace.EAST)) {
+			break;
+		case SOUTH:
 			if (left) {
-				return BlockFace.SOUTH;
+				ret = BlockFace.EAST;
 			} else {
-				return BlockFace.NORTH;
+				ret = BlockFace.WEST;
 			}
-		}
-		if (face.equals(BlockFace.SOUTH)) {
+			break;
+		case EAST:
 			if (left) {
-				return BlockFace.EAST;
+				ret = BlockFace.SOUTH;
 			} else {
-				return BlockFace.WEST;
+				ret = BlockFace.NORTH;
 			}
-		}
-		if (face.equals(BlockFace.WEST)) {
+			break;
+		case WEST:
 			if (left) {
-				return BlockFace.NORTH;
+				ret = BlockFace.NORTH;
 			} else {
-				return BlockFace.SOUTH;
+				ret = BlockFace.SOUTH;
 			}
+			break;
+		default:
+			new IOException("[SHIPS] Invalid direction: " + face.name());
+			break;
 		}
-		return face;
+		return ret;
+	}
+
+	public static String getMinecraftVersion() {
+		String temp = getPlugin().getServer().getVersion();
+		// String version = tempVersion.split("'(MC: ', ')'")[1];
+		String[] part1 = temp.split(":");
+		String part2 = part1[1].replace(")", "");
+		String part3 = part2.replace(" ", "");
+		return part3;
+	}
+
+	public static int getVersion(String version) {
+		String mcVersion = version.replace(".", "");
+		String[] splitMCVersion = version.split(".");
+		for (int A = splitMCVersion.length; A < 4; A++) {
+			mcVersion = (mcVersion + "0");
+		}
+		int version2 = Integer.parseInt(mcVersion);
+		return version2;
 	}
 
 	// This is used by the config files to copy internal files to outside, I put

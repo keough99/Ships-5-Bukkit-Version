@@ -42,26 +42,22 @@ public class Developer extends CommandLauncher {
 		} else {
 			if (args[1].equalsIgnoreCase("loadedVessels")) {
 				displayLoadedVessels(sender);
-			} else if (args[1].equalsIgnoreCase("Vesseltypes")) {
+			} else if (args[1].equalsIgnoreCase("VesselTypes")) {
 				displayVesselTypes(sender);
-			} else if (args[1].equalsIgnoreCase("CVesseltypes")) {
+			} else if (args[1].equalsIgnoreCase("CustomVesselTypes")) {
 				displayCustomVesselTypes(sender);
-			} else if (args[1].equalsIgnoreCase("materialsList")) {
+			} else if (args[1].equalsIgnoreCase("MaterialsList")) {
 				displayMaterialsList(sender);
-			} else if (args[1].equalsIgnoreCase("ramMaterials")) {
+			} else if (args[1].equalsIgnoreCase("RamMaterials")) {
 				displayRAMMaterialsList(sender);
-			} else if (args[1].equalsIgnoreCase("all")) {
+			} else if (args[1].equalsIgnoreCase("Structure")) {
+				displayVessel(sender, args);
+			} else if (args[1].equalsIgnoreCase("All")) {
 				sender.sendMessage("-----[LoadedVessels]-----");
 				displayLoadedVessels(sender);
-				sender.sendMessage("-----[Types]-----");
-				displayVesselTypes(sender);
 				sender.sendMessage("-----[Materials]-----");
 				displayMaterialsList(sender);
 				sender.sendMessage("-----[RAM]-----");
-				displayRAMMaterialsList(sender);
-			} else if (args[1].equalsIgnoreCase("structure")) {
-				displayVessel(sender, args);
-			} else {
 			}
 		}
 	}

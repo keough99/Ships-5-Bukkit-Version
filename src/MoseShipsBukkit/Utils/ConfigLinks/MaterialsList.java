@@ -197,7 +197,7 @@ public class MaterialsList {
 
 	Map<Byte, Integer> getValues(YamlConfiguration config, Material material) {
 		Map<Byte, Integer> dataValues = new HashMap<Byte, Integer>();
-		for (int A = -1; A < 100; A++) {
+		for (int A = -1; A < 25; A++) {
 			int check = config.getInt("Materials." + material.name() + ".dataValue_" + A);
 			if (check != 0) {
 				dataValues.put((byte) A, check);
@@ -206,36 +206,53 @@ public class MaterialsList {
 		return dataValues;
 	}
 
+	private boolean needsUpdating() {
+		YamlConfiguration config = YamlConfiguration.loadConfiguration(Config.getConfig().getFile());
+		String mcVersion = config.getString("MCVersion");
+		if (mcVersion == null) {
+			Config.getConfig().updateCheck();
+			return true;
+		}
+		int knownVersion = Ships.getVersion(mcVersion);
+		int latest = Ships.getVersion(Ships.getMinecraftVersion());
+		if (latest > knownVersion) {
+			return true;
+		}
+		return false;
+	}
+
 	public void save() {
 		File file = new File("plugins/Ships/Configuration/Materials.yml");
 		YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
 		List<Material> failedMaterials = new ArrayList<Material>();
+		boolean check = false;
 		for (Material material : Material.values()) {
 			List<MaterialAndData> materials = MaterialAndData.getMaterial(material);
 			if (materials != null) {
 				if (materials.size() == 0) {
 					failedMaterials.add(material);
+					if (needsUpdating()) {
+						check = true;
+						config.set("Materials." + material.name() + ".dataValue_-1", 0);
+						Bukkit.getConsoleSender().sendMessage(
+								Ships.runShipsMessage(material.name() + " has been updated in materials list", false));
+					}
 				} else {
-					if (Config.getConfig().updateCheck()) {
+					if (needsUpdating()) {
+						check = true;
 						for (MaterialAndData data : materials) {
 							if (contains(material, true)) {
 								if (config
 										.getInt("Materials." + material.name() + ".dataValue_" + data.getData()) == 0) {
 									config.set("Materials." + material.name() + ".dataValue_" + data.getData(), 1);
-									Bukkit.getConsoleSender().sendMessage(Ships.runShipsMessage(
-											material.name() + " has been updated in materials list", false));
 								}
 							} else if (contains(material, false)) {
-								if (config.getInt(
-										"Materials." + material.name() + ".dataValue_" + data.getData()) == 0) {
+								if (config
+										.getInt("Materials." + material.name() + ".dataValue_" + data.getData()) == 0) {
 									config.set("Materials." + material.name() + ".dataValue_" + data.getData(), 2);
-									Bukkit.getConsoleSender().sendMessage(Ships.runShipsMessage(
-											material.name() + " has been updated in materials list", false));
 								}
 							} else {
 								config.set("Materials." + material.name() + ".dataValue_" + data.getData(), 0);
-								Bukkit.getConsoleSender().sendMessage(Ships.runShipsMessage(
-										material.name() + " has been updated in materials list", false));
 							}
 						}
 					}
@@ -247,9 +264,25 @@ public class MaterialsList {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		if (check) {
+			Bukkit.getConsoleSender()
+					.sendMessage(Ships.runShipsMessage(
+							"A new minecraft version found. \n Attempting to update the materials list with the new blocks",
+							false));
+			YamlConfiguration config2 = YamlConfiguration.loadConfiguration(Config.getConfig().getFile());
+			config2.set("MCVersion", Ships.getMinecraftVersion());
+			try {
+				config2.save(Config.getConfig().getFile());
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
 		if (failedMaterials.size() != 0) {
-			Bukkit.getConsoleSender().sendMessage(Ships.runShipsMessage("Ships currently does not support "
-					+ failedMaterials + "(found " + failedMaterials.size() + " blocks)", true));
+			Bukkit.getConsoleSender()
+					.sendMessage(Ships.runShipsMessage(
+							"Ships currently does not support " + failedMaterials + "(found " + failedMaterials.size()
+									+ " blocks). \n These blocks are in the materials list however they maynot work correctly",
+							true));
 			Bukkit.getConsoleSender()
 					.sendMessage(Ships.runShipsMessage(
 							"check http://dev.bukkit.org/bukkit-plugins/ships to see if you are using the latest version. This version is "

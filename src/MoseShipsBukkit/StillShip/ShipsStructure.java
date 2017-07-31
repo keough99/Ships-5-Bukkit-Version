@@ -9,6 +9,7 @@ import org.bukkit.block.Sign;
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import MoseShipsBukkit.Utils.ConfigLinks.Config;
+import MoseShipsBukkit.Utils.MoseUtils.ExpandedList;
 
 public class ShipsStructure {
 
@@ -25,10 +26,10 @@ public class ShipsStructure {
 			if (special != null) {
 				SPE_BLOCKS.add(special);
 			} else if ((id == 50) || (id == 55) || (id == 51) || (id == 64) || (id == 65) || (id == 68) || (id == 69)
-					|| (id == 70) || (id == 71) || (id == 72) || (id == 75) || (id == 76) || (id == 77)
-					|| (id == 93) || (id == 94) || (id == 96) || (id == 131) || (id == 132) || (id == 143)
-					|| (id == 147) || (id == 148) || (id == 149) || (id == 150) || (id == 167) || (id == 177)
-					|| (id == 193) || (id == 194) || (id == 195) || (id == 196) || (id == 197)) {
+					|| (id == 70) || (id == 71) || (id == 72) || (id == 75) || (id == 76) || (id == 77) || (id == 93)
+					|| (id == 94) || (id == 96) || (id == 131) || (id == 132) || (id == 143) || (id == 147)
+					|| (id == 148) || (id == 149) || (id == 150) || (id == 167) || (id == 177) || (id == 193)
+					|| (id == 194) || (id == 195) || (id == 196) || (id == 197)) {
 				if (block.getState() instanceof Sign) {
 					SpecialBlock block2 = new SpecialBlock((Sign) block.getState());
 					SPE_BLOCKS.add(block2);
@@ -77,7 +78,7 @@ public class ShipsStructure {
 		int gap = config.getInt("Structure.StructureLimits.airCheckGap");
 		for (int A = 1; A < gap; A++) {
 			Block block2 = block.getRelative(0, -A, 0);
-			if (getAllBlocks().contains(block2)) {
+			if (contains(getAllBlocks(), block2)) {
 				return blocks;
 			} else if (block2.getType().equals(Material.AIR)) {
 				blocks.add(block2);
@@ -86,8 +87,8 @@ public class ShipsStructure {
 		return null;
 	}
 
-	public List<Block> getAllBlocks() {
-		List<Block> blocks = new ArrayList<Block>();
+	public ExpandedList<Block> getAllBlocks() {
+		ExpandedList<Block> blocks = new ExpandedList<Block>();
 		blocks.addAll(STA_BLOCKS);
 		blocks.addAll(PRI_BLOCKS);
 		for (SpecialBlock block : SPE_BLOCKS) {
@@ -95,5 +96,14 @@ public class ShipsStructure {
 		}
 		blocks.addAll(AIR_BLOCKS);
 		return blocks;
+	}
+
+	private <T extends Object> boolean contains(List<T> list, T object) {
+		for (Object obj : list) {
+			if (obj.equals(object)) {
+				return true;
+			}
+		}
+		return false;
 	}
 }

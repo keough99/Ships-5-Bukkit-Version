@@ -45,9 +45,11 @@ public class Config {
 	}
 
 	public int getConfigVersionInt() {
-		String versionString = getConfigVersionString().replace(".", "");
-
-		System.out.println(versionString);
+		String versionString = getConfigVersionString();
+		if (versionString == null) {
+			return 0;
+		}
+		versionString = versionString.replace(".", "");
 		int version = Integer.parseInt(versionString);
 		return version;
 	}
@@ -69,10 +71,7 @@ public class Config {
 	}
 
 	public boolean containsIgnoreList(int lastest) {
-		Integer[] list = {
-			5011,
-			5012
-		};
+		Integer[] list = { 5017 };
 		for (int A : list) {
 			if (lastest == A) {
 				return true;
@@ -82,7 +81,6 @@ public class Config {
 	}
 
 	public boolean updateCheck() {
-		String latest = getLatestVersionString().replace(".", "");
 		String current = getConfigVersionString();
 		if (NEEDEDUPDATE) {
 			return true;
@@ -92,23 +90,24 @@ public class Config {
 			NEEDEDUPDATE = true;
 			return true;
 		}
-		current = current.replace(".", "");
-		int latestN = Integer.parseInt(latest);
-		int currentN = Integer.parseInt(current);
+		int latestN = getLatestVersionInt();
+		int currentN = getConfigVersionInt();
 		int result = latestN - currentN;
-		if ((result == 0) || (containsIgnoreList(latestN))) {
-			if (containsIgnoreList(latestN)) {
-				try {
-					File file2 = getFile();
-					YamlConfiguration config2 = YamlConfiguration.loadConfiguration(file2);
-					config2.set("Version", getLatestVersionString());
-					config2.save(file2);
-
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
-			}
+		if (result == 0) {
+			Bukkit.getConsoleSender().sendMessage("Ships config detected with no issues");
 			return false;
+		} else if (containsIgnoreList(currentN)) {
+			try {
+				Bukkit.getConsoleSender().sendMessage("New version of Ships detected. Config does not need a restart");
+				File file2 = getFile();
+				YamlConfiguration config2 = YamlConfiguration.loadConfiguration(file2);
+				config2.set("Version", getLatestVersionString());
+				config2.save(file2);
+				return false;
+			} catch (IOException e) {
+				e.printStackTrace();
+				return false;
+			}
 		} else {
 			Bukkit.getConsoleSender().sendMessage(Ships.runShipsMessage(
 					"Your config maybe out of date. \n" + "Ships 5 found the current version of your config to be "
@@ -126,9 +125,14 @@ public class Config {
 		YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
 		if (file.exists()) {
 			int curVersion = getConfigVersionInt();
-			if (curVersion > 5010) {
-				config.set("Structure.airCheckGap", 120);
-				config.set("Structure.trackLimit", 5000);
+			int latVersion = getLatestVersionInt();
+			if ((curVersion <= 5011) && (latVersion >= 5012)) {
+				config.set("Structure.StructureLimits.airCheckGap", 120);
+				config.set("Structure.StructureLimits.trackLimit", 5000);
+			}
+			if ((curVersion <= 5016) && (latVersion >= 5017)) {
+				config.set("VesselLoading.DeleteFailedLoads", false);
+				config.set("MCVersion", "1.8.0");
 			}
 			// compare version then update
 			config.set("Version", getLatestVersionString());

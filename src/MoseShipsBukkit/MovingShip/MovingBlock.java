@@ -19,75 +19,13 @@ public class MovingBlock {
 	int ID;
 	byte DATA;
 	Location MOVETO;
-	MovementMethod MOVEMETHOD;
 
 	@SuppressWarnings("deprecation")
 	public MovingBlock(Block block, BaseVessel vessel, MovementMethod move) {
 		BLOCK = block;
-		MOVEMETHOD = move;
 		ID = block.getTypeId();
 		DATA = block.getData();
-		BlockFace facing = vessel.getFacingDirection();
-		if (move.equals(MovementMethod.MOVE_FORWARD)) {
-			Block block2 = block.getRelative(facing, move.getSpeed());
-			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_BACKWARD)) {
-			Block block2 = block.getRelative(facing.getOppositeFace(), move.getSpeed());
-			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_LEFT)) {
-			Block block2 = block.getRelative(Ships.getSideFace(facing, true), move.getSpeed());
-			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_RIGHT)) {
-			Block block2 = block.getRelative(Ships.getSideFace(facing, false), move.getSpeed());
-			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_UP)) {
-			Block block2 = block.getRelative(0, move.getSpeed(), 0);
-			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_DOWN)) {
-			Block block2 = block.getRelative(0, -move.getSpeed(), 0);
-			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.ROTATE_RIGHT)) {
-			Block block2 = vessel.getSign().getBlock();
-			int shift = block2.getLocation().getBlockX() - block2.getLocation().getBlockZ();
-			double symmetry = block2.getLocation().getBlockZ();
-
-			double X = block.getLocation().getX() - shift;
-			double Y = block.getLocation().getY();
-			double Z = block.getLocation().getZ()
-					- (block.getLocation().getZ() - symmetry) * 2.0D + shift;
-			Location loc = new Location(block.getWorld(), Z, Y, X);
-			MOVETO = loc;
-		} else if (move.equals(MovementMethod.ROTATE_LEFT)) {
-			Block block2 = vessel.getSign().getBlock();
-			int shift = block2.getLocation().getBlockX() - block2.getLocation().getBlockZ();
-			double symmetry = block2.getLocation().getBlockX();
-
-			double X = block.getLocation().getX()
-					- (block.getLocation().getX() - symmetry) * 2.0D - shift;
-			double Y = block.getLocation().getY();
-			double Z = block.getLocation().getZ() + shift;
-			Location loc = new Location(block.getWorld(), Z, Y, X);
-			MOVETO = loc;
-		} else if (move.equals(MovementMethod.MOVE_POSITIVE_X)) {
-			Block block2 = block.getRelative(move.getSpeed(), 0, 0);
-			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_POSITIVE_Z)) {
-			Block block2 = block.getRelative(0, 0, move.getSpeed());
-			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_NEGATIVE_X)) {
-			Block block2 = block.getRelative(-move.getSpeed(), 0, 0);
-			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_NEGATIVE_Z)) {
-			Block block2 = block.getRelative(0, 0, -move.getSpeed());
-			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.TELEPORT)) {
-		} else {
-			Bukkit.getConsoleSender()
-					.sendMessage(Ships.runShipsMessage(
-							"Something went wrong, maybe a custom [API] MovementMethod. ("
-									+ move + ")",
-							true));
-		}
+		move(block, vessel, move);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -97,67 +35,106 @@ public class MovingBlock {
 		BLOCK = block;
 		ID = block.getTypeId();
 		DATA = block.getData();
+		move(block, vessel, move);
+	}
+
+	@SuppressWarnings("deprecation")
+	public MovingBlock(Block block, Location moveTo) {
+		BLOCK = block;
+		ID = block.getTypeId();
+		DATA = block.getData();
+		MOVETO = moveTo;
+	}
+
+	@SuppressWarnings("deprecation")
+	public MovingBlock(SpecialBlock sBlock, Location moveTo) {
+		Block block = sBlock.getBlock();
+		BLOCK = block;
+		ID = block.getTypeId();
+		DATA = block.getData();
+		MOVETO = moveTo;
+	}
+
+	private void move(Block block, BaseVessel vessel, MovementMethod move) {
 		BlockFace facing = vessel.getFacingDirection();
-		if (move.equals(MovementMethod.MOVE_FORWARD)) {
-			Block block2 = block.getRelative(facing, move.getSpeed());
+		Block block2 = null;
+		switch (move) {
+		case MOVE_FORWARD:
+			block2 = block.getRelative(facing, move.getSpeed());
 			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_BACKWARD)) {
-			Block block2 = block.getRelative(facing.getOppositeFace(), move.getSpeed());
+			break;
+		case MOVE_BACKWARD:
+			block2 = block.getRelative(facing.getOppositeFace(), move.getSpeed());
 			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_LEFT)) {
-			Block block2 = block.getRelative(Ships.getSideFace(facing, true), move.getSpeed());
+			break;
+
+		case MOVE_LEFT:
+			block2 = block.getRelative(Ships.getSideFace(facing, true), move.getSpeed());
 			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_RIGHT)) {
-			Block block2 = block.getRelative(Ships.getSideFace(facing, false), move.getSpeed());
+			break;
+		case MOVE_RIGHT:
+			block2 = block.getRelative(Ships.getSideFace(facing, false), move.getSpeed());
 			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_UP)) {
-			Block block2 = block.getRelative(0, move.getSpeed(), 0);
+			break;
+
+		case MOVE_UP:
+			block2 = block.getRelative(0, move.getSpeed(), 0);
 			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_DOWN)) {
-			Block block2 = block.getRelative(0, -move.getSpeed(), 0);
+			break;
+		case MOVE_DOWN:
+			block2 = block.getRelative(0, -move.getSpeed(), 0);
 			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.ROTATE_RIGHT)) {
-			Block block2 = vessel.getSign().getBlock();
+			break;
+
+		case ROTATE_RIGHT: {
+			block2 = vessel.getSign().getBlock();
 			int shift = block2.getLocation().getBlockX() - block2.getLocation().getBlockZ();
 			double symmetry = block2.getLocation().getBlockZ();
 
 			double X = block.getLocation().getX() - shift;
 			double Y = block.getLocation().getY();
-			double Z = block.getLocation().getZ()
-					- (block.getLocation().getZ() - symmetry) * 2.0D + shift;
+			double Z = block.getLocation().getZ() - (block.getLocation().getZ() - symmetry) * 2.0D + shift;
 			Location loc = new Location(block.getWorld(), Z, Y, X);
 			MOVETO = loc;
-		} else if (move.equals(MovementMethod.ROTATE_LEFT)) {
-			Block block2 = vessel.getSign().getBlock();
+			break;
+		}
+		case ROTATE_LEFT:
+			block2 = vessel.getSign().getBlock();
 			int shift = block2.getLocation().getBlockX() - block2.getLocation().getBlockZ();
 			double symmetry = block2.getLocation().getBlockX();
 
-			double X = block.getLocation().getX()
-					- (block.getLocation().getX() - symmetry) * 2.0D - shift;
+			double X = block.getLocation().getX() - (block.getLocation().getX() - symmetry) * 2.0D - shift;
 			double Y = block.getLocation().getY();
 			double Z = block.getLocation().getZ() + shift;
 			Location loc = new Location(block.getWorld(), Z, Y, X);
 			MOVETO = loc;
-		} else if (move.equals(MovementMethod.MOVE_POSITIVE_X)) {
-			Block block2 = block.getRelative(move.getSpeed(), 0, 0);
-			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_POSITIVE_Z)) {
-			Block block2 = block.getRelative(0, 0, move.getSpeed());
-			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_NEGATIVE_X)) {
-			Block block2 = block.getRelative(-move.getSpeed(), 0, 0);
-			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.MOVE_NEGATIVE_Z)) {
-			Block block2 = block.getRelative(0, 0, -move.getSpeed());
-			MOVETO = block2.getLocation();
-		} else if (move.equals(MovementMethod.TELEPORT)) {
+			break;
 
-		} else {
-			Bukkit.getConsoleSender()
-					.sendMessage(Ships.runShipsMessage(
-							"Something went wrong, maybe a custom [API] MovementMethod. ("
-									+ move + ")",
-							true));
+		case MOVE_POSITIVE_X:
+			block2 = block.getRelative(move.getSpeed(), 0, 0);
+			MOVETO = block2.getLocation();
+			break;
+		case MOVE_NEGATIVE_X:
+			block2 = block.getRelative(-move.getSpeed(), 0, 0);
+			MOVETO = block2.getLocation();
+			break;
+
+		case MOVE_POSITIVE_Z:
+			block2 = block.getRelative(0, 0, move.getSpeed());
+			MOVETO = block2.getLocation();
+			break;
+		case MOVE_NEGATIVE_Z:
+			block2 = block.getRelative(0, 0, -move.getSpeed());
+			MOVETO = block2.getLocation();
+			break;
+
+		case TELEPORT:
+			break;
+
+		default:
+			Bukkit.getConsoleSender().sendMessage(Ships.runShipsMessage(
+					"Something went wrong, maybe a custom [API] MovementMethod. (" + move + ")", true));
+			break;
 		}
 	}
 
@@ -179,10 +156,6 @@ public class MovingBlock {
 
 	public Block getBlock() {
 		return BLOCK;
-	}
-
-	public MovementMethod getMethod() {
-		return MOVEMETHOD;
 	}
 
 	public static List<Block> convertToBlockArray(List<MovingBlock> blocks) {
